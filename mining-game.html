@@ -1,0 +1,2603 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <title>⚔️ 深渊矿工传说 | Abyss Miner Legend</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Noto+Sans+SC:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00d4ff;
+            --secondary: #ff00a0;
+            --accent: #ffd700;
+            --danger: #ff2d2d;
+            --success: #00ff88;
+            --bg-dark: #0a0a0f;
+            --bg-panel: #151520;
+            --bg-card: #1a1a2e;
+            --border-glow: 0 0 20px rgba(0, 212, 255, 0.3);
+            --metal-gradient: linear-gradient(145deg, #2a2a3a 0%, #1a1a2a 50%, #151520 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--bg-dark);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: #fff;
+        }
+
+        /* ===== 背景特效 ===== */
+        .bg-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: float-up 8s infinite linear;
+            opacity: 0.6;
+        }
+
+        @keyframes float-up {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* ===== 游戏容器 ===== */
+        .game-container {
+            position: relative;
+            z-index: 10;
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 10px;
+            min-height: 100vh;
+        }
+
+        /* ===== 屏幕震动效果 ===== */
+        @keyframes screen-shake {
+            0%, 100% { transform: translate(0, 0); }
+            10% { transform: translate(-3px, -2px); }
+            20% { transform: translate(3px, 2px); }
+            30% { transform: translate(-3px, 2px); }
+            40% { transform: translate(3px, -2px); }
+            50% { transform: translate(-2px, 3px); }
+            60% { transform: translate(2px, -3px); }
+            70% { transform: translate(-3px, -2px); }
+            80% { transform: translate(3px, 2px); }
+            90% { transform: translate(-2px, -3px); }
+        }
+
+        .screen-shake {
+            animation: screen-shake 0.5s ease-out;
+        }
+
+        /* ===== 头部 ===== */
+        .game-header {
+            text-align: center;
+            padding: 15px;
+            background: var(--metal-gradient);
+            border-radius: 15px;
+            margin-bottom: 10px;
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            box-shadow: var(--border-glow), inset 0 2px 10px rgba(255,255,255,0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.1), transparent);
+            animation: header-shine 3s infinite;
+        }
+
+        @keyframes header-shine {
+            0% { left: -100%; }
+            50%, 100% { left: 100%; }
+        }
+
+        .game-title {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 16px;
+            background: linear-gradient(90deg, var(--primary), var(--accent), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+            letter-spacing: 2px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .game-subtitle {
+            font-size: 11px;
+            color: rgba(255,255,255,0.5);
+            margin-top: 8px;
+            letter-spacing: 1px;
+        }
+
+        /* ===== 状态栏 ===== */
+        .status-bar {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .status-card {
+            background: var(--metal-gradient);
+            border-radius: 12px;
+            padding: 12px 8px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .status-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            opacity: 0.5;
+        }
+
+        .status-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+            filter: drop-shadow(0 0 5px currentColor);
+        }
+
+        .status-value {
+            font-size: 18px;
+            font-weight: 900;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 12px;
+        }
+
+        .status-label {
+            font-size: 10px;
+            color: rgba(255,255,255,0.5);
+            margin-top: 4px;
+        }
+
+        .status-card.hp { border-color: rgba(255, 45, 45, 0.3); }
+        .status-card.hp .status-value { color: var(--danger); }
+        .status-card.energy { border-color: rgba(0, 212, 255, 0.3); }
+        .status-card.energy .status-value { color: var(--primary); }
+        .status-card.money { border-color: rgba(255, 215, 0, 0.3); }
+        .status-card.money .status-value { color: var(--accent); }
+
+        /* ===== HP/体力条 ===== */
+        .bar-container {
+            background: rgba(0,0,0,0.4);
+            border-radius: 10px;
+            height: 8px;
+            margin-top: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bar-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: bar-shine 2s infinite;
+        }
+
+        @keyframes bar-shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .bar-fill.hp {
+            background: linear-gradient(90deg, #ff2d2d, #ff6b6b);
+            box-shadow: 0 0 10px rgba(255, 45, 45, 0.5);
+        }
+
+        .bar-fill.energy {
+            background: linear-gradient(90deg, #00d4ff, #00ff88);
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+
+        .bar-fill.boss {
+            background: linear-gradient(90deg, #ff00a0, #ff2d2d);
+            box-shadow: 0 0 15px rgba(255, 0, 160, 0.5);
+        }
+
+        /* ===== 关卡地图 ===== */
+        .level-map {
+            background: var(--bg-panel);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .level-map-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .level-map-title::before {
+            content: '🗺️';
+        }
+
+        .level-path {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .level-node {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .level-node:hover:not(.locked) {
+            transform: translateX(5px);
+            border-color: rgba(0, 212, 255, 0.3);
+        }
+
+        .level-node.current {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+            animation: node-pulse 2s infinite;
+        }
+
+        @keyframes node-pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.2); }
+            50% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.4); }
+        }
+
+        .level-node.completed {
+            border-color: var(--success);
+            opacity: 0.8;
+        }
+
+        .level-node.locked {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .level-number {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--metal-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 14px;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .level-node.current .level-number {
+            background: linear-gradient(145deg, var(--accent), #ff8c00);
+            color: #000;
+            animation: rotate-slow 4s linear infinite;
+        }
+
+        @keyframes rotate-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .level-info {
+            flex: 1;
+        }
+
+        .level-name {
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .level-desc {
+            font-size: 10px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .level-status {
+            font-size: 20px;
+        }
+
+        .level-connector {
+            width: 2px;
+            height: 20px;
+            background: linear-gradient(180deg, var(--success), transparent);
+            margin-left: 29px;
+            margin-top: -8px;
+            margin-bottom: -8px;
+        }
+
+        /* ===== 导航标签 ===== */
+        .nav-tabs {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .nav-tab {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 12px 4px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 11px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .nav-tab:hover {
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(145deg, rgba(0, 212, 255, 0.2), rgba(0, 212, 255, 0.05));
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+        }
+
+        .nav-tab-icon {
+            font-size: 20px;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        /* ===== 页面内容 ===== */
+        .page {
+            display: none;
+            animation: page-fade-in 0.3s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes page-fade-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== 挖矿页面 ===== */
+        .mining-area {
+            background: var(--bg-panel);
+            border-radius: 15px;
+            padding: 15px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            position: relative;
+        }
+
+        .depth-display {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+        }
+
+        .depth-label {
+            font-size: 12px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .depth-value {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 14px;
+            color: var(--accent);
+        }
+
+        .depth-progress {
+            flex: 1;
+            margin: 0 15px;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .depth-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        /* ===== 矿工角色 ===== */
+        .miner-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .miner-character {
+            width: 120px;
+            height: 120px;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .miner-character:active {
+            transform: scale(0.95);
+        }
+
+        .miner-character.mining {
+            animation: miner-mine 0.3s ease-out;
+        }
+
+        .miner-character.jumping {
+            animation: miner-jump 0.5s ease-out;
+        }
+
+        .miner-character.hurt {
+            animation: miner-hurt 0.5s ease-out;
+        }
+
+        @keyframes miner-mine {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(-15deg) translateY(-5px); }
+            50% { transform: rotate(10deg); }
+            75% { transform: rotate(-5deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        @keyframes miner-jump {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes miner-hurt {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-10px) rotate(-5deg); }
+            40% { transform: translateX(10px) rotate(5deg); }
+            60% { transform: translateX(-10px) rotate(-5deg); }
+            80% { transform: translateX(10px) rotate(5deg); }
+        }
+
+        .miner-svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.3));
+        }
+
+        .miner-state {
+            margin-top: 10px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.6);
+            padding: 6px 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+        }
+
+        .miner-state.mining { color: var(--accent); }
+        .miner-state.battle { color: var(--danger); }
+
+        /* ===== 挖矿地面 ===== */
+        .mining-ground {
+            width: 200px;
+            height: 80px;
+            margin: 0 auto;
+            background: linear-gradient(180deg, #3d2817 0%, #2a1b0f 50%, #1a0f08 100%);
+            border-radius: 10px;
+            position: relative;
+            cursor: pointer;
+            border: 3px solid #5d4037;
+            box-shadow: 
+                inset 0 5px 20px rgba(0,0,0,0.5),
+                0 10px 30px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+
+        .mining-ground::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 30%;
+            background: repeating-linear-gradient(
+                90deg,
+                #4a3728 0px,
+                #5d4037 10px,
+                #4a3728 20px
+            );
+            opacity: 0.5;
+        }
+
+        .mining-ground::after {
+            content: '⛏️ 点击挖矿 ⛏️';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+            white-space: nowrap;
+        }
+
+        .mining-ground.disabled {
+            filter: grayscale(0.8);
+            cursor: not-allowed;
+        }
+
+        /* ===== 矿石收集目标 ===== */
+        .ore-targets {
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+        }
+
+        .ore-targets-title {
+            font-size: 11px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 8px;
+        }
+
+        .ore-targets-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .ore-target {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            background: var(--bg-card);
+            border-radius: 20px;
+            font-size: 11px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .ore-target.completed {
+            border-color: var(--success);
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .ore-target-icon {
+            font-size: 16px;
+        }
+
+        .ore-target-progress {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        /* ===== Boss战界面 ===== */
+        .boss-battle-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .boss-battle-overlay.active {
+            display: flex;
+            animation: battle-start 0.5s ease;
+        }
+
+        @keyframes battle-start {
+            0% { opacity: 0; transform: scale(1.1); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .boss-battle-container {
+            width: 100%;
+            max-width: 400px;
+            background: var(--bg-panel);
+            border-radius: 20px;
+            padding: 20px;
+            border: 2px solid var(--danger);
+            box-shadow: 0 0 50px rgba(255, 45, 45, 0.3);
+            position: relative;
+        }
+
+        .boss-battle-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 900;
+            color: var(--danger);
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(255, 45, 45, 0.5);
+            animation: title-pulse 1s infinite;
+        }
+
+        @keyframes title-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Boss角色 */
+        .boss-character {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 20px;
+            position: relative;
+            animation: boss-idle 2s ease-in-out infinite;
+        }
+
+        @keyframes boss-idle {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-10px) scale(1.02); }
+        }
+
+        .boss-character.attacking {
+            animation: boss-attack 0.5s ease-out;
+        }
+
+        .boss-character.hurt {
+            animation: boss-hurt 0.3s ease-out;
+        }
+
+        @keyframes boss-attack {
+            0% { transform: translateX(0); }
+            30% { transform: translateX(-30px) scale(1.1); }
+            60% { transform: translateX(30px); }
+            100% { transform: translateX(0); }
+        }
+
+        @keyframes boss-hurt {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(2) hue-rotate(180deg); }
+        }
+
+        .boss-svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 30px rgba(255, 0, 160, 0.5));
+        }
+
+        /* Boss血条 */
+        .boss-hp-section {
+            margin-bottom: 20px;
+        }
+
+        .boss-hp-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .boss-hp-bar {
+            height: 20px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid rgba(255,0,160,0.3);
+        }
+
+        .boss-hp-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff00a0, #ff2d2d);
+            border-radius: 8px;
+            transition: width 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .boss-hp-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent 0px,
+                rgba(255,255,255,0.1) 10px,
+                transparent 20px
+            );
+            animation: hp-stripes 0.5s linear infinite;
+        }
+
+        @keyframes hp-stripes {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(20px); }
+        }
+
+        /* 玩家血条 */
+        .player-hp-section {
+            margin-bottom: 20px;
+        }
+
+        .player-hp-bar {
+            height: 15px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid rgba(0,212,255,0.3);
+        }
+
+        .player-hp-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d4ff, #00ff88);
+            border-radius: 6px;
+            transition: width 0.3s ease;
+        }
+
+        /* 战斗按钮 */
+        .battle-actions {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 10px;
+        }
+
+        .attack-btn {
+            background: linear-gradient(145deg, #ff2d2d, #cc0000);
+            border: none;
+            border-radius: 12px;
+            padding: 15px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            box-shadow: 0 5px 20px rgba(255, 45, 45, 0.4);
+            transition: all 0.1s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .attack-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: btn-shine 2s infinite;
+        }
+
+        @keyframes btn-shine {
+            0% { left: -100%; }
+            50%, 100% { left: 100%; }
+        }
+
+        .attack-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 10px rgba(255, 45, 45, 0.4);
+        }
+
+        .heal-btn {
+            background: linear-gradient(145deg, #00d4ff, #0088cc);
+            border: none;
+            border-radius: 12px;
+            padding: 15px;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .heal-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .heal-btn .potion-count {
+            font-size: 10px;
+            opacity: 0.8;
+        }
+
+        /* ===== 背包页面 ===== */
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .inventory-item {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 15px 10px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .inventory-item.has-item {
+            border-color: var(--accent);
+            background: linear-gradient(145deg, rgba(255, 215, 0, 0.1), var(--bg-card));
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.1);
+        }
+
+        .inventory-item.rare {
+            border-color: #9b59b6;
+            background: linear-gradient(145deg, rgba(155, 89, 182, 0.1), var(--bg-card));
+        }
+
+        .inventory-item.epic {
+            border-color: #3498db;
+            background: linear-gradient(145deg, rgba(52, 152, 219, 0.1), var(--bg-card));
+        }
+
+        .inventory-item.legendary {
+            border-color: #e74c3c;
+            background: linear-gradient(145deg, rgba(231, 76, 60, 0.1), var(--bg-card));
+            animation: legendary-glow 2s infinite;
+        }
+
+        @keyframes legendary-glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(231, 76, 60, 0.2); }
+            50% { box-shadow: 0 0 25px rgba(231, 76, 60, 0.5); }
+        }
+
+        .inv-icon {
+            font-size: 32px;
+            margin-bottom: 5px;
+            filter: drop-shadow(0 0 5px currentColor);
+        }
+
+        .inv-name {
+            font-size: 11px;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 3px;
+        }
+
+        .inv-count {
+            font-size: 16px;
+            font-weight: 900;
+            color: var(--accent);
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+        }
+
+        /* ===== 商店页面 ===== */
+        .shop-section {
+            background: var(--bg-panel);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .shop-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .shop-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: var(--bg-card);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .shop-item-icon {
+            font-size: 32px;
+            margin-right: 12px;
+        }
+
+        .shop-item-info {
+            flex: 1;
+        }
+
+        .shop-item-name {
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .shop-item-desc {
+            font-size: 10px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .shop-item-price {
+            font-size: 12px;
+            color: var(--accent);
+            font-weight: 700;
+            margin-right: 10px;
+        }
+
+        .buy-btn {
+            background: linear-gradient(145deg, var(--success), #00cc6a);
+            border: none;
+            border-radius: 8px;
+            padding: 8px 15px;
+            color: #000;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .buy-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+        }
+
+        .buy-btn:disabled {
+            background: #444;
+            color: #888;
+            cursor: not-allowed;
+        }
+
+        /* ===== 特效 ===== */
+        .damage-number {
+            position: fixed;
+            font-size: 24px;
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 0 0 10px currentColor;
+            pointer-events: none;
+            z-index: 2000;
+            animation: damage-float 1s ease-out forwards;
+        }
+
+        .damage-number.crit {
+            font-size: 32px;
+            color: #ff0;
+        }
+
+        .damage-number.heal {
+            color: #0f0;
+        }
+
+        @keyframes damage-float {
+            0% { transform: translateY(0) scale(0.5); opacity: 0; }
+            20% { transform: translateY(-20px) scale(1.2); opacity: 1; }
+            100% { transform: translateY(-60px) scale(1); opacity: 0; }
+        }
+
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1500;
+        }
+
+        .sparkle {
+            width: 4px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: sparkle-fly 0.8s ease-out forwards;
+        }
+
+        @keyframes sparkle-fly {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+        }
+
+        .rock-fragment {
+            font-size: 14px;
+            animation: rock-fly 0.6s ease-out forwards;
+        }
+
+        @keyframes rock-fly {
+            0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) rotate(360deg) opacity: 0; }
+        }
+
+        /* ===== 通知 ===== */
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: var(--bg-panel);
+            padding: 15px 25px;
+            border-radius: 10px;
+            border: 1px solid var(--primary);
+            box-shadow: 0 5px 30px rgba(0, 212, 255, 0.3);
+            z-index: 3000;
+            transition: transform 0.3s ease;
+            text-align: center;
+        }
+
+        .notification.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .notification.success { border-color: var(--success); }
+        .notification.error { border-color: var(--danger); }
+
+        .notification-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .notification-text {
+            font-size: 12px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        /* ===== 弹窗 ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 2500;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-panel);
+            border-radius: 20px;
+            padding: 25px;
+            max-width: 350px;
+            width: 100%;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            box-shadow: 0 0 50px rgba(0, 212, 255, 0.2);
+            animation: modal-pop 0.3s ease;
+        }
+
+        @keyframes modal-pop {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .modal-content {
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+            text-align: center;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-btn.primary {
+            background: linear-gradient(145deg, var(--primary), #0088cc);
+            color: #fff;
+        }
+
+        .modal-btn.secondary {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        /* ===== 胜利/失败界面 ===== */
+        .result-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .result-overlay.show {
+            display: flex;
+        }
+
+        .result-overlay.victory {
+            background: linear-gradient(180deg, rgba(0, 100, 0, 0.9), rgba(0,0,0,0.95));
+        }
+
+        .result-overlay.defeat {
+            background: linear-gradient(180deg, rgba(100, 0, 0, 0.9), rgba(0,0,0,0.95));
+        }
+
+        .result-title {
+            font-size: 36px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            text-shadow: 0 0 30px currentColor;
+        }
+
+        .result-overlay.victory .result-title { color: var(--success); }
+        .result-overlay.defeat .result-title { color: var(--danger); }
+
+        .result-rewards {
+            background: rgba(0,0,0,0.5);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .result-btn {
+            background: linear-gradient(145deg, var(--accent), #ff8c00);
+            border: none;
+            border-radius: 12px;
+            padding: 15px 40px;
+            color: #000;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            animation: btn-pulse 1.5s infinite;
+        }
+
+        @keyframes btn-pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.4); }
+            50% { box-shadow: 0 0 40px rgba(255, 215, 0, 0.6); }
+        }
+
+        /* ===== 闪烁效果 ===== */
+        .flash-red {
+            animation: flash-red 0.3s ease;
+        }
+
+        @keyframes flash-red {
+            0%, 100% { background: transparent; }
+            50% { background: rgba(255, 0, 0, 0.3); }
+        }
+
+        /* ===== 镐子状态 ===== */
+        .pickaxe-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .pickaxe-icon {
+            font-size: 28px;
+        }
+
+        .pickaxe-info {
+            flex: 1;
+        }
+
+        .pickaxe-name {
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .pickaxe-durability {
+            font-size: 10px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .durability-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .durability-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #ffd93d);
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+
+        /* ===== 药水快捷栏 ===== */
+        .potion-quick-bar {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+
+        .potion-slot {
+            width: 60px;
+            height: 60px;
+            background: var(--bg-card);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .potion-slot:hover:not(.empty) {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        .potion-slot.empty {
+            opacity: 0.3;
+            cursor: default;
+        }
+
+        .potion-slot-icon {
+            font-size: 24px;
+        }
+
+        .potion-slot-count {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            background: var(--danger);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        /* ===== 战斗日志 ===== */
+        .battle-log {
+            height: 80px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 15px;
+            overflow-y: auto;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        .battle-log-entry {
+            margin-bottom: 4px;
+            padding: 2px 0;
+        }
+
+        .battle-log-entry.damage { color: #ff6b6b; }
+        .battle-log-entry.heal { color: #6bcf7f; }
+        .battle-log-entry.reward { color: #ffd700; }
+
+        /* ===== 奖励展示 ===== */
+        .reward-display {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin: 15px 0;
+        }
+
+        .reward-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .reward-item-icon {
+            font-size: 18px;
+        }
+
+        .reward-item-value {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 380px) {
+            .game-title { font-size: 14px; }
+            .status-value { font-size: 10px; }
+            .nav-tab { padding: 10px 2px; font-size: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 背景特效 -->
+    <div class="bg-particles" id="bgParticles"></div>
+    <div class="grid-overlay"></div>
+
+    <div class="game-container" id="gameContainer">
+        <!-- 头部 -->
+        <div class="game-header">
+            <div class="game-title">⚔️ 深渊矿工传说</div>
+            <div class="game-subtitle">ABYSS MINER LEGEND</div>
+        </div>
+
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <div class="status-card hp">
+                <div class="status-icon">❤️</div>
+                <div class="status-value" id="hpValue">100</div>
+                <div class="bar-container">
+                    <div class="bar-fill hp" id="hpBar" style="width: 100%"></div>
+                </div>
+                <div class="status-label">生命值</div>
+            </div>
+            <div class="status-card energy">
+                <div class="status-icon">⚡</div>
+                <div class="status-value" id="energyValue">100</div>
+                <div class="bar-container">
+                    <div class="bar-fill energy" id="energyBar" style="width: 100%"></div>
+                </div>
+                <div class="status-label">体力值</div>
+            </div>
+            <div class="status-card money">
+                <div class="status-icon">💰</div>
+                <div class="status-value" id="moneyValue">0</div>
+                <div class="status-label">金币</div>
+            </div>
+        </div>
+
+        <!-- 关卡地图 -->
+        <div class="level-map">
+            <div class="level-map-title">关卡选择</div>
+            <div class="level-path" id="levelPath">
+                <!-- 动态生成 -->
+            </div>
+        </div>
+
+        <!-- 导航标签 -->
+        <div class="nav-tabs">
+            <div class="nav-tab active" data-page="mining" onclick="game.showPage('mining')">
+                <span class="nav-tab-icon">⛏️</span>
+                <span>挖矿</span>
+            </div>
+            <div class="nav-tab" data-page="inventory" onclick="game.showPage('inventory')">
+                <span class="nav-tab-icon">🎒</span>
+                <span>背包</span>
+            </div>
+            <div class="nav-tab" data-page="shop" onclick="game.showPage('shop')">
+                <span class="nav-tab-icon">🛒</span>
+                <span>商店</span>
+            </div>
+            <div class="nav-tab" data-page="upgrade" onclick="game.showPage('upgrade')">
+                <span class="nav-tab-icon">⚒️</span>
+                <span>升级</span>
+            </div>
+        </div>
+
+        <!-- 挖矿页面 -->
+        <div class="page active" id="page-mining">
+            <div class="mining-area">
+                <!-- 深度显示 -->
+                <div class="depth-display">
+                    <div class="depth-label">当前深度</div>
+                    <div class="depth-progress">
+                        <div class="depth-fill" id="depthProgress" style="width: 0%"></div>
+                    </div>
+                    <div class="depth-value"><span id="currentDepth">0</span>/<span id="targetDepth">50</span>m</div>
+                </div>
+
+                <!-- 镐子状态 -->
+                <div class="pickaxe-status">
+                    <div class="pickaxe-icon" id="pickaxeIcon">⛏️</div>
+                    <div class="pickaxe-info">
+                        <div class="pickaxe-name" id="pickaxeName">生锈的镐子</div>
+                        <div class="pickaxe-durability">耐久度 <span id="durabilityText">100/100</span></div>
+                        <div class="durability-bar">
+                            <div class="durability-fill" id="durabilityBar" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 矿工角色 -->
+                <div class="miner-container">
+                    <div class="miner-character" id="minerCharacter" onclick="game.mine()">
+                        <svg class="miner-svg" viewBox="0 0 100 100">
+                            <!-- 矿工简笔画 -->
+                            <defs>
+                                <linearGradient id="helmetGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#ffd700"/>
+                                    <stop offset="100%" style="stop-color:#ff8c00"/>
+                                </linearGradient>
+                                <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#4a90d9"/>
+                                    <stop offset="100%" style="stop-color:#2e5c8a"/>
+                                </linearGradient>
+                            </defs>
+                            <!-- 身体 -->
+                            <ellipse cx="50" cy="70" rx="20" ry="25" fill="url(#bodyGrad)"/>
+                            <!-- 头 -->
+                            <circle cx="50" cy="40" r="18" fill="#ffccaa"/>
+                            <!-- 安全帽 -->
+                            <path d="M 30 35 Q 50 15 70 35 L 70 40 Q 50 30 30 40 Z" fill="url(#helmetGrad)"/>
+                            <!-- 眼睛 -->
+                            <circle cx="44" cy="42" r="3" fill="#333"/>
+                            <circle cx="56" cy="42" r="3" fill="#333"/>
+                            <!-- 微笑 -->
+                            <path d="M 44 50 Q 50 55 56 50" stroke="#333" stroke-width="2" fill="none"/>
+                            <!-- 镐子 -->
+                            <g id="minerPickaxe">
+                                <rect x="65" y="30" width="4" height="40" fill="#8b4513" transform="rotate(30 65 50)"/>
+                                <path d="M 75 25 L 85 15 L 80 30 Z" fill="#666" transform="rotate(30 65 50)"/>
+                                <path d="M 65 35 L 55 25 L 60 40 Z" fill="#666" transform="rotate(30 65 50)"/>
+                            </g>
+                        </svg>
+                    </div>
+                    <div class="miner-state" id="minerState">准备挖矿</div>
+                </div>
+
+                <!-- 挖矿地面 -->
+                <div class="mining-ground" id="miningGround" onclick="game.mine()"></div>
+
+                <!-- 矿石收集目标 -->
+                <div class="ore-targets">
+                    <div class="ore-targets-title">本关目标</div>
+                    <div class="ore-targets-list" id="oreTargets">
+                        <!-- 动态生成 -->
+                    </div>
+                </div>
+
+                <!-- 药水快捷栏 -->
+                <div class="potion-quick-bar">
+                    <div class="potion-slot" id="hpPotionSlot" onclick="game.useHpPotion()">
+                        <div class="potion-slot-icon">❤️</div>
+                        <div class="potion-slot-count" id="hpPotionCount">0</div>
+                    </div>
+                    <div class="potion-slot" id="energyPotionSlot" onclick="game.useEnergyPotion()">
+                        <div class="potion-slot-icon">⚡</div>
+                        <div class="potion-slot-count" id="energyPotionCount">0</div>
+                    </div>
+                    <div class="potion-slot empty" id="emptySlot">
+                        <div class="potion-slot-icon">⬜</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 背包页面 -->
+        <div class="page" id="page-inventory">
+            <div class="shop-section">
+                <div class="shop-title">🎒 矿石背包</div>
+                <div class="inventory-grid" id="inventoryGrid">
+                    <!-- 动态生成 -->
+                </div>
+            </div>
+            <div class="shop-section">
+                <div class="shop-title">💰 出售矿石</div>
+                <div style="text-align: center; padding: 20px;">
+                    <button class="result-btn" onclick="game.sellAllOres()">全部出售</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 商店页面 -->
+        <div class="page" id="page-shop">
+            <div class="shop-section">
+                <div class="shop-title">🧪 药水商店</div>
+                <div id="potionShop">
+                    <!-- 动态生成 -->
+                </div>
+            </div>
+            <div class="shop-section">
+                <div class="shop-title">🔧 工具商店</div>
+                <div id="toolShop">
+                    <!-- 动态生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 升级页面 -->
+        <div class="page" id="page-upgrade">
+            <div class="shop-section">
+                <div class="shop-title">⚔️ 镐子升级</div>
+                <div id="upgradeShop">
+                    <!-- 动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Boss战界面 -->
+    <div class="boss-battle-overlay" id="bossBattleOverlay">
+        <div class="boss-battle-container">
+            <div class="boss-battle-title">⚔️ BOSS战 ⚔️</div>
+            
+            <!-- Boss角色 -->
+            <div class="boss-character" id="bossCharacter">
+                <svg class="boss-svg" viewBox="0 0 150 150" id="bossSvg">
+                    <!-- Boss SVG 动态生成 -->
+                </svg>
+            </div>
+
+            <!-- Boss血条 -->
+            <div class="boss-hp-section">
+                <div class="boss-hp-label">
+                    <span id="bossName">岩石巨人</span>
+                    <span><span id="bossHpText">1000</span>/<span id="bossMaxHp">1000</span></span>
+                </div>
+                <div class="boss-hp-bar">
+                    <div class="boss-hp-fill" id="bossHpBar" style="width: 100%"></div>
+                </div>
+            </div>
+
+            <!-- 玩家血条 -->
+            <div class="player-hp-section">
+                <div class="boss-hp-label">
+                    <span>玩家</span>
+                    <span><span id="battlePlayerHp">100</span>/<span id="battlePlayerMaxHp">100</span></span>
+                </div>
+                <div class="player-hp-bar">
+                    <div class="player-hp-fill" id="battlePlayerHpBar" style="width: 100%"></div>
+                </div>
+            </div>
+
+            <!-- 战斗日志 -->
+            <div class="battle-log" id="battleLog"></div>
+
+            <!-- 战斗按钮 -->
+            <div class="battle-actions">
+                <button class="attack-btn" id="attackBtn" onclick="game.bossAttack()">
+                    ⚔️ 攻击
+                </button>
+                <button class="heal-btn" id="healBtn" onclick="game.useBattlePotion()">
+                    ❤️ 药水
+                    <span class="potion-count" id="battlePotionCount">x0</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 结果界面 -->
+    <div class="result-overlay" id="resultOverlay">
+        <div class="result-title" id="resultTitle">胜利!</div>
+        <div class="result-rewards" id="resultRewards">
+            <div style="font-size: 14px; margin-bottom: 10px;">获得奖励:</div>
+            <div class="reward-display" id="rewardDisplay"></div>
+        </div>
+        <button class="result-btn" id="resultBtn" onclick="game.closeResult()">继续</button>
+    </div>
+
+    <!-- 通知 -->
+    <div class="notification" id="notification">
+        <div class="notification-title" id="notifTitle">提示</div>
+        <div class="notification-text" id="notifText">内容</div>
+    </div>
+
+    <!-- 弹窗 -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-title" id="modalTitle">标题</div>
+            <div class="modal-content" id="modalContent">内容</div>
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="game.closeModal()">取消</button>
+                <button class="modal-btn primary" onclick="game.confirmModal()">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== 游戏核心类 =====
+        class MiningGame {
+            constructor() {
+                // 玩家数据
+                this.player = {
+                    hp: 100,
+                    maxHp: 100,
+                    energy: 100,
+                    maxEnergy: 100,
+                    money: 0,
+                    level: 1,
+                    currentLevelId: 1
+                };
+
+                // 药水
+                this.potions = {
+                    hp: 0,
+                    energy: 0
+                };
+
+                // 镐子
+                this.pickaxe = {
+                    id: 1,
+                    name: '生锈的镐子',
+                    icon: '⛏️',
+                    durability: 100,
+                    maxDurability: 100,
+                    power: 10,
+                    efficiency: 1
+                };
+
+                // 背包
+                this.inventory = {};
+
+                // 关卡数据
+                this.levels = [
+                    {
+                        id: 1,
+                        name: '新手矿洞',
+                        description: '深度: 50m | 目标: 收集10个煤矿',
+                        targetDepth: 50,
+                        oreTargets: { coal: 10 },
+                        boss: {
+                            name: '岩石傀儡',
+                            hp: 500,
+                            attack: 8,
+                            defense: 2,
+                            reward: { money: 200, coal: 20 }
+                        },
+                        unlocked: true,
+                        completed: false
+                    },
+                    {
+                        id: 2,
+                        name: '铜矿深渊',
+                        description: '深度: 100m | 目标: 收集15个铜矿',
+                        targetDepth: 100,
+                        oreTargets: { copper: 15 },
+                        boss: {
+                            name: '铜甲巨兽',
+                            hp: 800,
+                            attack: 12,
+                            defense: 5,
+                            reward: { money: 400, copper: 25 }
+                        },
+                        unlocked: false,
+                        completed: false
+                    },
+                    {
+                        id: 3,
+                        name: '铁矿迷宫',
+                        description: '深度: 150m | 目标: 收集12个铁矿',
+                        targetDepth: 150,
+                        oreTargets: { iron: 12 },
+                        boss: {
+                            name: '钢铁守卫',
+                            hp: 1200,
+                            attack: 15,
+                            defense: 8,
+                            reward: { money: 600, iron: 20 }
+                        },
+                        unlocked: false,
+                        completed: false
+                    },
+                    {
+                        id: 4,
+                        name: '银晶洞穴',
+                        description: '深度: 200m | 目标: 收集8个银矿',
+                        targetDepth: 200,
+                        oreTargets: { silver: 8 },
+                        boss: {
+                            name: '水晶龙',
+                            hp: 1800,
+                            attack: 20,
+                            defense: 10,
+                            reward: { money: 1000, silver: 15, diamond: 2 }
+                        },
+                        unlocked: false,
+                        completed: false
+                    },
+                    {
+                        id: 5,
+                        name: '黄金深渊',
+                        description: '深度: 300m | 目标: 收集5个金矿',
+                        targetDepth: 300,
+                        oreTargets: { gold: 5 },
+                        boss: {
+                            name: '熔岩之王',
+                            hp: 3000,
+                            attack: 30,
+                            defense: 15,
+                            reward: { money: 2000, gold: 10, diamond: 5, legendary: 1 }
+                        },
+                        unlocked: false,
+                        completed: false
+                    }
+                ];
+
+                // 矿石类型
+                this.oreTypes = {
+                    coal: { name: '煤矿', icon: '⚫', basePrice: 5, rarity: 0.5, minDepth: 0 },
+                    copper: { name: '铜矿', icon: '🟤', basePrice: 15, rarity: 0.3, minDepth: 30 },
+                    iron: { name: '铁矿', icon: '⚙️', basePrice: 30, rarity: 0.2, minDepth: 60 },
+                    silver: { name: '银矿', icon: '⬜', basePrice: 80, rarity: 0.1, minDepth: 100 },
+                    gold: { name: '金矿', icon: '🟡', basePrice: 200, rarity: 0.05, minDepth: 150 },
+                    diamond: { name: '钻石', icon: '💎', basePrice: 1000, rarity: 0.02, minDepth: 200 },
+                    legendary: { name: '传说矿石', icon: '👑', basePrice: 5000, rarity: 0.005, minDepth: 250 }
+                };
+
+                // 商店物品
+                this.shopItems = {
+                    potions: [
+                        { id: 'hp_small', name: '小生命药水', icon: '❤️', price: 50, effect: 'hp', value: 30 },
+                        { id: 'hp_large', name: '大生命药水', icon: '❤️', price: 120, effect: 'hp', value: 80 },
+                        { id: 'energy_small', name: '小体力药水', icon: '⚡', price: 30, effect: 'energy', value: 30 },
+                        { id: 'energy_large', name: '大体力药水', icon: '⚡', price: 80, effect: 'energy', value: 80 }
+                    ],
+                    tools: [
+                        { id: 'repair_kit', name: '修理工具包', icon: '🔧', price: 100, effect: 'repair' }
+                    ]
+                };
+
+                // 镐子升级
+                this.upgrades = [
+                    { id: 1, name: '生锈的镐子', icon: '⛏️', price: 0, power: 10, durability: 100 },
+                    { id: 2, name: '铁镐', icon: '🔨', price: 300, power: 15, durability: 150 },
+                    { id: 3, name: '钢镐', icon: '⚒️', price: 800, power: 25, durability: 200 },
+                    { id: 4, name: '银镐', icon: '🥈', price: 2000, power: 40, durability: 300 },
+                    { id: 5, name: '金镐', icon: '🥇', price: 5000, power: 60, durability: 400 },
+                    { id: 6, name: '钻石镐', icon: '💎', price: 12000, power: 100, durability: 600 }
+                ];
+
+                // Boss战数据
+                this.bossBattle = {
+                    active: false,
+                    boss: null,
+                    bossHp: 0,
+                    turn: 0
+                };
+
+                // 初始化
+                this.init();
+            }
+
+            init() {
+                this.loadGame();
+                this.createBackgroundParticles();
+                this.startAutoRegen();
+                this.renderAll();
+            }
+
+            // ===== 背景粒子 =====
+            createBackgroundParticles() {
+                const container = document.getElementById('bgParticles');
+                for (let i = 0; i < 30; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'bg-particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 8 + 's';
+                    particle.style.animationDuration = (6 + Math.random() * 4) + 's';
+                    container.appendChild(particle);
+                }
+            }
+
+            // ===== 自动恢复 =====
+            startAutoRegen() {
+                setInterval(() => {
+                    if (!this.bossBattle.active) {
+                        if (this.player.energy < this.player.maxEnergy) {
+                            this.player.energy = Math.min(this.player.maxEnergy, this.player.energy + 1);
+                            this.updateUI();
+                        }
+                    }
+                }, 2000);
+            }
+
+            // ===== 挖矿 =====
+            mine() {
+                if (this.bossBattle.active) return;
+
+                const currentLevel = this.getCurrentLevel();
+
+                // 检查体力
+                if (this.player.energy < 5) {
+                    this.showNotification('体力不足!', 'error');
+                    return;
+                }
+
+                // 检查耐久度
+                if (this.pickaxe.durability <= 0) {
+                    this.showNotification('镐子已损坏!请修理', 'error');
+                    return;
+                }
+
+                // 消耗资源
+                this.player.energy -= 5;
+                this.pickaxe.durability -= 1;
+
+                // 矿工动画
+                this.animateMiner('mining');
+
+                // 生成矿石
+                const ore = this.generateOre(currentLevel);
+                if (ore) {
+                    const amount = Math.floor(Math.random() * 2) + 1;
+                    this.inventory[ore.key] = (this.inventory[ore.key] || 0) + amount;
+                    
+                    // 显示获得
+                    this.showFloatingText(`+${amount}`, event?.clientX || window.innerWidth/2, event?.clientY || 300, '#ffd700');
+                    this.createParticles(event?.clientX || window.innerWidth/2, event?.clientY || 300);
+                }
+
+                // 增加深度
+                if (this.player.level < currentLevel.targetDepth) {
+                    this.player.level += Math.floor(Math.random() * 3) + 1;
+                }
+
+                // 屏幕震动
+                this.shakeScreen();
+
+                // 检查是否到达Boss
+                if (this.player.level >= currentLevel.targetDepth && !currentLevel.completed) {
+                    setTimeout(() => this.startBossBattle(), 500);
+                }
+
+                this.updateUI();
+                this.renderOreTargets();
+            }
+
+            generateOre(level) {
+                const rand = Math.random();
+                let cumulative = 0;
+
+                const availableOres = Object.entries(this.oreTypes).filter(([key, ore]) => {
+                    return this.player.level >= ore.minDepth;
+                });
+
+                for (const [key, ore] of availableOres) {
+                    cumulative += ore.rarity;
+                    if (rand <= cumulative) {
+                        return { key, ...ore };
+                    }
+                }
+
+                return availableOres.length > 0 ? { key: availableOres[0][0], ...availableOres[0][1] } : null;
+            }
+
+            // ===== Boss战 =====
+            startBossBattle() {
+                const currentLevel = this.getCurrentLevel();
+                this.bossBattle = {
+                    active: true,
+                    boss: { ...currentLevel.boss },
+                    bossHp: currentLevel.boss.hp,
+                    turn: 0
+                };
+
+                document.getElementById('bossBattleOverlay').classList.add('active');
+                document.getElementById('gameContainer').style.filter = 'blur(5px)';
+
+                this.renderBoss();
+                this.updateBossUI();
+                this.addBattleLog(`⚔️ ${currentLevel.boss.name} 出现了!`, 'system');
+            }
+
+            renderBoss() {
+                const boss = this.bossBattle.boss;
+                const svg = document.getElementById('bossSvg');
+                
+                // 根据Boss类型渲染不同SVG
+                let bossSvg = '';
+                if (boss.name.includes('岩石')) {
+                    bossSvg = `
+                        <defs>
+                            <linearGradient id="rockGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#8b7355"/>
+                                <stop offset="100%" style="stop-color:#4a3728"/>
+                            </linearGradient>
+                        </defs>
+                        <ellipse cx="75" cy="130" rx="50" ry="15" fill="rgba(0,0,0,0.3)"/>
+                        <path d="M 40 120 L 30 40 L 60 20 L 90 20 L 120 40 L 110 120 Z" fill="url(#rockGrad)"/>
+                        <circle cx="55" cy="60" r="12" fill="#ff4444"/>
+                        <circle cx="95" cy="60" r="12" fill="#ff4444"/>
+                        <circle cx="55" cy="60" r="6" fill="#ff0000"/>
+                        <circle cx="95" cy="60" r="6" fill="#ff0000"/>
+                        <path d="M 60 90 Q 75 100 90 90" stroke="#333" stroke-width="4" fill="none"/>
+                        <rect x="20" y="70" width="20" height="40" fill="#6b4423" rx="5"/>
+                        <rect x="110" y="70" width="20" height="40" fill="#6b4423" rx="5"/>
+                    `;
+                } else if (boss.name.includes('铜')) {
+                    bossSvg = `
+                        <ellipse cx="75" cy="130" rx="50" ry="15" fill="rgba(0,0,0,0.3)"/>
+                        <rect x="35" y="30" width="80" height="90" rx="20" fill="#b87333"/>
+                        <circle cx="55" cy="60" r="15" fill="#ff4444"/>
+                        <circle cx="95" cy="60" r="15" fill="#ff4444"/>
+                        <path d="M 60 90 Q 75 105 90 90" stroke="#4a2c17" stroke-width="5" fill="none"/>
+                        <path d="M 20 50 L 35 70 L 20 90" stroke="#b87333" stroke-width="15" fill="none"/>
+                        <path d="M 130 50 L 115 70 L 130 90" stroke="#b87333" stroke-width="15" fill="none"/>
+                    `;
+                } else if (boss.name.includes('钢铁')) {
+                    bossSvg = `
+                        <ellipse cx="75" cy="130" rx="50" ry="15" fill="rgba(0,0,0,0.3)"/>
+                        <rect x="30" y="25" width="90" height="100" rx="10" fill="#4a4a4a"/>
+                        <rect x="30" y="25" width="90" height="30" fill="#333"/>
+                        <circle cx="55" cy="65" r="10" fill="#00ff00" opacity="0.8"/>
+                        <circle cx="95" cy="65" r="10" fill="#00ff00" opacity="0.8"/>
+                        <rect x="50" y="90" width="50" height="5" fill="#666"/>
+                        <rect x="15" y="50" width="20" height="50" fill="#555" rx="5"/>
+                        <rect x="115" y="50" width="20" height="50" fill="#555" rx="5"/>
+                    `;
+                } else if (boss.name.includes('水晶')) {
+                    bossSvg = `
+                        <ellipse cx="75" cy="130" rx="50" ry="15" fill="rgba(0,0,0,0.3)"/>
+                        <path d="M 75 10 L 110 50 L 95 100 L 55 100 L 40 50 Z" fill="#9b59b6"/>
+                        <path d="M 75 10 L 110 50 L 75 70 L 40 50 Z" fill="#b8a0d9"/>
+                        <circle cx="60" cy="55" r="12" fill="#ff6b6b"/>
+                        <circle cx="90" cy="55" r="12" fill="#ff6b6b"/>
+                        <circle cx="60" cy="55" r="6" fill="#fff"/>
+                        <circle cx="90" cy="55" r="6" fill="#fff"/>
+                        <path d="M 20 40 L 40 55 L 30 80" stroke="#9b59b6" stroke-width="10" fill="none"/>
+                        <path d="M 130 40 L 110 55 L 120 80" stroke="#9b59b6" stroke-width="10" fill="none"/>
+                    `;
+                } else {
+                    bossSvg = `
+                        <ellipse cx="75" cy="130" rx="50" ry="15" fill="rgba(0,0,0,0.3)"/>
+                        <circle cx="75" cy="60" r="50" fill="#e74c3c"/>
+                        <circle cx="75" cy="60" r="40" fill="#c0392b"/>
+                        <circle cx="60" cy="50" r="15" fill="#fff" opacity="0.3"/>
+                        <circle cx="55" cy="55" r="12" fill="#ffeb3b"/>
+                        <circle cx="95" cy="55" r="12" fill="#ffeb3b"/>
+                        <circle cx="55" cy="55" r="6" fill="#ff0000"/>
+                        <circle cx="95" cy="55" r="6" fill="#ff0000"/>
+                        <path d="M 55 85 Q 75 70 95 85" stroke="#333" stroke-width="4" fill="none"/>
+                        <path d="M 20 40 Q 30 20 45 35" stroke="#ff5722" stroke-width="15" fill="none"/>
+                        <path d="M 130 40 Q 120 20 105 35" stroke="#ff5722" stroke-width="15" fill="none"/>
+                    `;
+                }
+                
+                svg.innerHTML = bossSvg;
+                document.getElementById('bossName').textContent = boss.name;
+            }
+
+            bossAttack() {
+                if (!this.bossBattle.active) return;
+
+                // 玩家攻击
+                const damage = Math.floor(this.pickaxe.power * (0.8 + Math.random() * 0.4));
+                this.bossBattle.bossHp -= damage;
+                
+                // Boss受伤动画
+                document.getElementById('bossCharacter').classList.add('hurt');
+                setTimeout(() => document.getElementById('bossCharacter').classList.remove('hurt'), 300);
+
+                // 显示伤害
+                this.showFloatingText(`-${damage}`, window.innerWidth/2, window.innerHeight/2 - 100, '#ff6b6b', true);
+                this.addBattleLog(`你对${this.bossBattle.boss.name}造成了${damage}点伤害`, 'damage');
+
+                // 更新Boss血条
+                this.updateBossUI();
+
+                // 检查胜利
+                if (this.bossBattle.bossHp <= 0) {
+                    this.bossVictory();
+                    return;
+                }
+
+                // Boss反击
+                setTimeout(() => this.bossCounterAttack(), 800);
+            }
+
+            bossCounterAttack() {
+                if (!this.bossBattle.active) return;
+
+                const boss = this.bossBattle.boss;
+                const damage = Math.max(1, boss.attack - Math.floor(this.pickaxe.power / 20));
+                this.player.hp -= damage;
+
+                // 屏幕震动
+                this.shakeScreen();
+                document.body.classList.add('flash-red');
+                setTimeout(() => document.body.classList.remove('flash-red'), 300);
+
+                // 显示伤害
+                this.showFloatingText(`-${damage}`, window.innerWidth/2, window.innerHeight/2 + 50, '#ff0000');
+                this.addBattleLog(`${boss.name}对你造成了${damage}点伤害!`, 'damage');
+
+                // 更新UI
+                this.updateBossUI();
+
+                // 检查失败
+                if (this.player.hp <= 0) {
+                    this.bossDefeat();
+                }
+            }
+
+            useBattlePotion() {
+                if (this.potions.hp > 0 && this.player.hp < this.player.maxHp) {
+                    this.potions.hp--;
+                    const heal = 50;
+                    this.player.hp = Math.min(this.player.maxHp, this.player.hp + heal);
+                    this.showFloatingText(`+${heal}`, window.innerWidth/2, window.innerHeight/2 + 50, '#00ff00');
+                    this.addBattleLog(`使用了生命药水，恢复${heal}点HP`, 'heal');
+                    this.updateBossUI();
+                    
+                    // Boss回合
+                    setTimeout(() => this.bossCounterAttack(), 500);
+                }
+            }
+
+            bossVictory() {
+                const boss = this.bossBattle.boss;
+                const currentLevel = this.getCurrentLevel();
+                
+                // 给予奖励
+                this.player.money += boss.reward.money;
+                for (const [key, amount] of Object.entries(boss.reward)) {
+                    if (key !== 'money') {
+                        this.inventory[key] = (this.inventory[key] || 0) + amount;
+                    }
+                }
+
+                // 标记关卡完成
+                currentLevel.completed = true;
+                const nextLevel = this.levels.find(l => l.id === currentLevel.id + 1);
+                if (nextLevel) {
+                    nextLevel.unlocked = true;
+                }
+
+                this.addBattleLog(`胜利!获得奖励!`, 'reward');
+                
+                setTimeout(() => {
+                    this.endBossBattle();
+                    this.showResult(true, boss.reward);
+                }, 1000);
+            }
+
+            bossDefeat() {
+                this.addBattleLog(`你被击败了...`, 'damage');
+                
+                setTimeout(() => {
+                    this.endBossBattle();
+                    this.showResult(false);
+                    // 恢复一些HP
+                    this.player.hp = Math.floor(this.player.maxHp * 0.3);
+                }, 1000);
+            }
+
+            endBossBattle() {
+                this.bossBattle.active = false;
+                document.getElementById('bossBattleOverlay').classList.remove('active');
+                document.getElementById('gameContainer').style.filter = '';
+                this.updateUI();
+                this.renderLevelMap();
+            }
+
+            updateBossUI() {
+                const boss = this.bossBattle.boss;
+                const bossHpPercent = Math.max(0, (this.bossBattle.bossHp / boss.hp) * 100);
+                document.getElementById('bossHpBar').style.width = bossHpPercent + '%';
+                document.getElementById('bossHpText').textContent = Math.max(0, this.bossBattle.bossHp);
+                document.getElementById('bossMaxHp').textContent = boss.hp;
+
+                const playerHpPercent = Math.max(0, (this.player.hp / this.player.maxHp) * 100);
+                document.getElementById('battlePlayerHpBar').style.width = playerHpPercent + '%';
+                document.getElementById('battlePlayerHp').textContent = Math.max(0, this.player.hp);
+                document.getElementById('battlePlayerMaxHp').textContent = this.player.maxHp;
+
+                document.getElementById('battlePotionCount').textContent = `x${this.potions.hp}`;
+                document.getElementById('healBtn').disabled = this.potions.hp <= 0;
+            }
+
+            addBattleLog(text, type) {
+                const log = document.getElementById('battleLog');
+                const entry = document.createElement('div');
+                entry.className = `battle-log-entry ${type}`;
+                entry.textContent = text;
+                log.appendChild(entry);
+                log.scrollTop = log.scrollHeight;
+            }
+
+            // ===== 结果界面 =====
+            showResult(victory, rewards = null) {
+                const overlay = document.getElementById('resultOverlay');
+                overlay.className = 'result-overlay ' + (victory ? 'victory show' : 'defeat show');
+                document.getElementById('resultTitle').textContent = victory ? '🎉 胜利!' : '💀 失败...';
+                
+                const rewardDisplay = document.getElementById('rewardDisplay');
+                if (victory && rewards) {
+                    let html = `<div class="reward-item"><span class="reward-item-icon">💰</span><span class="reward-item-value">${rewards.money}</span></div>`;
+                    for (const [key, amount] of Object.entries(rewards)) {
+                        if (key !== 'money' && this.oreTypes[key]) {
+                            html += `<div class="reward-item"><span class="reward-item-icon">${this.oreTypes[key].icon}</span><span class="reward-item-value">${amount}</span></div>`;
+                        }
+                    }
+                    rewardDisplay.innerHTML = html;
+                } else {
+                    rewardDisplay.innerHTML = '<div style="color: rgba(255,255,255,0.5);">再试一次吧...</div>';
+                }
+            }
+
+            closeResult() {
+                document.getElementById('resultOverlay').classList.remove('show');
+                if (this.player.hp <= 0) {
+                    this.player.hp = Math.floor(this.player.maxHp * 0.3);
+                }
+                this.updateUI();
+            }
+
+            // ===== 页面切换 =====
+            showPage(page) {
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                
+                document.getElementById(`page-${page}`).classList.add('active');
+                document.querySelector(`[data-page="${page}"]`).classList.add('active');
+
+                if (page === 'inventory') this.renderInventory();
+                if (page === 'shop') this.renderShop();
+                if (page === 'upgrade') this.renderUpgrades();
+            }
+
+            // ===== 渲染函数 =====
+            renderAll() {
+                this.renderLevelMap();
+                this.updateUI();
+                this.renderOreTargets();
+                this.renderInventory();
+                this.renderShop();
+                this.renderUpgrades();
+            }
+
+            renderLevelMap() {
+                const container = document.getElementById('levelPath');
+                container.innerHTML = this.levels.map((level, index) => {
+                    let statusClass = 'locked';
+                    let statusIcon = '🔒';
+                    
+                    if (level.completed) {
+                        statusClass = 'completed';
+                        statusIcon = '✅';
+                    } else if (level.unlocked) {
+                        if (level.id === this.player.currentLevelId) {
+                            statusClass = 'current';
+                            statusIcon = '⚔️';
+                        } else {
+                            statusClass = '';
+                            statusIcon = '📍';
+                        }
+                    }
+
+                    const connector = index < this.levels.length - 1 ? `<div class="level-connector"></div>` : '';
+                    
+                    return `
+                        <div class="level-node ${statusClass}" onclick="game.selectLevel(${level.id})">
+                            <div class="level-number">${level.id}</div>
+                            <div class="level-info">
+                                <div class="level-name">${level.name}</div>
+                                <div class="level-desc">${level.description}</div>
+                            </div>
+                            <div class="level-status">${statusIcon}</div>
+                        </div>
+                        ${connector}
+                    `;
+                }).join('');
+            }
+
+            renderOreTargets() {
+                const currentLevel = this.getCurrentLevel();
+                const container = document.getElementById('oreTargets');
+                
+                if (!currentLevel || currentLevel.completed) {
+                    container.innerHTML = '<div style="color: rgba(255,255,255,0.5); font-size: 12px;">本关已完成</div>';
+                    return;
+                }
+
+                container.innerHTML = Object.entries(currentLevel.oreTargets).map(([key, target]) => {
+                    const current = this.inventory[key] || 0;
+                    const completed = current >= target;
+                    const ore = this.oreTypes[key];
+                    
+                    return `
+                        <div class="ore-target ${completed ? 'completed' : ''}">
+                            <span class="ore-target-icon">${ore.icon}</span>
+                            <span class="ore-target-progress">${current}/${target}</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            renderInventory() {
+                const container = document.getElementById('inventoryGrid');
+                container.innerHTML = Object.entries(this.oreTypes).map(([key, ore]) => {
+                    const count = this.inventory[key] || 0;
+                    let rarityClass = '';
+                    if (ore.basePrice > 1000) rarityClass = 'legendary';
+                    else if (ore.basePrice > 500) rarityClass = 'epic';
+                    else if (ore.basePrice > 100) rarityClass = 'rare';
+
+                    return `
+                        <div class="inventory-item ${count > 0 ? 'has-item' : ''} ${rarityClass}">
+                            <div class="inv-icon">${ore.icon}</div>
+                            <div class="inv-name">${ore.name}</div>
+                            <div class="inv-count">${count}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            renderShop() {
+                // 药水商店
+                const potionContainer = document.getElementById('potionShop');
+                potionContainer.innerHTML = this.shopItems.potions.map(item => `
+                    <div class="shop-item">
+                        <div class="shop-item-icon">${item.icon}</div>
+                        <div class="shop-item-info">
+                            <div class="shop-item-name">${item.name}</div>
+                            <div class="shop-item-desc">恢复${item.value}点${item.effect === 'hp' ? '生命值' : '体力'}</div>
+                        </div>
+                        <div class="shop-item-price">💰${item.price}</div>
+                        <button class="buy-btn" onclick="game.buyItem('potion', '${item.id}')" ${this.player.money < item.price ? 'disabled' : ''}>购买</button>
+                    </div>
+                `).join('');
+
+                // 工具商店
+                const toolContainer = document.getElementById('toolShop');
+                toolContainer.innerHTML = this.shopItems.tools.map(item => `
+                    <div class="shop-item">
+                        <div class="shop-item-icon">${item.icon}</div>
+                        <div class="shop-item-info">
+                            <div class="shop-item-name">${item.name}</div>
+                            <div class="shop-item-desc">恢复全部耐久度</div>
+                        </div>
+                        <div class="shop-item-price">💰${item.price}</div>
+                        <button class="buy-btn" onclick="game.buyItem('tool', '${item.id}')" ${this.player.money < item.price ? 'disabled' : ''}>购买</button>
+                    </div>
+                `).join('');
+            }
+
+            renderUpgrades() {
+                const container = document.getElementById('upgradeShop');
+                container.innerHTML = this.upgrades.map(upgrade => {
+                    const owned = this.pickaxe.id === upgrade.id;
+                    const canBuy = this.player.money >= upgrade.price && this.pickaxe.id < upgrade.id;
+                    
+                    return `
+                        <div class="shop-item" style="${owned ? 'border-color: var(--accent);' : ''}">
+                            <div class="shop-item-icon">${upgrade.icon}</div>
+                            <div class="shop-item-info">
+                                <div class="shop-item-name">${upgrade.name}</div>
+                                <div class="shop-item-desc">攻击力: ${upgrade.power} | 耐久: ${upgrade.durability}</div>
+                            </div>
+                            <div class="shop-item-price">💰${upgrade.price}</div>
+                            ${owned ? 
+                                '<span style="color: var(--accent); font-size: 12px;">✓ 已拥有</span>' : 
+                                `<button class="buy-btn" onclick="game.buyUpgrade(${upgrade.id})" ${!canBuy ? 'disabled' : ''}>升级</button>`
+                            }
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            updateUI() {
+                const currentLevel = this.getCurrentLevel();
+                
+                // 状态值
+                document.getElementById('hpValue').textContent = this.player.hp;
+                document.getElementById('hpBar').style.width = (this.player.hp / this.player.maxHp * 100) + '%';
+                document.getElementById('energyValue').textContent = this.player.energy;
+                document.getElementById('energyBar').style.width = (this.player.energy / this.player.maxEnergy * 100) + '%';
+                document.getElementById('moneyValue').textContent = this.player.money;
+
+                // 深度
+                document.getElementById('currentDepth').textContent = Math.min(this.player.level, currentLevel?.targetDepth || 50);
+                document.getElementById('targetDepth').textContent = currentLevel?.targetDepth || 50;
+                const depthPercent = currentLevel ? Math.min(100, (this.player.level / currentLevel.targetDepth) * 100) : 0;
+                document.getElementById('depthProgress').style.width = depthPercent + '%';
+
+                // 镐子
+                document.getElementById('pickaxeIcon').textContent = this.pickaxe.icon;
+                document.getElementById('pickaxeName').textContent = this.pickaxe.name;
+                document.getElementById('durabilityText').textContent = `${this.pickaxe.durability}/${this.pickaxe.maxDurability}`;
+                document.getElementById('durabilityBar').style.width = (this.pickaxe.durability / this.pickaxe.maxDurability * 100) + '%';
+
+                // 药水
+                document.getElementById('hpPotionCount').textContent = this.potions.hp;
+                document.getElementById('energyPotionCount').textContent = this.potions.energy;
+                document.getElementById('hpPotionSlot').className = 'potion-slot' + (this.potions.hp <= 0 ? ' empty' : '');
+                document.getElementById('energyPotionSlot').className = 'potion-slot' + (this.potions.energy <= 0 ? ' empty' : '');
+            }
+
+            // ===== 操作函数 =====
+            selectLevel(levelId) {
+                const level = this.levels.find(l => l.id === levelId);
+                if (!level || !level.unlocked) return;
+
+                this.player.currentLevelId = levelId;
+                this.player.level = 0;
+                this.renderLevelMap();
+                this.updateUI();
+                this.renderOreTargets();
+                this.showNotification(`进入${level.name}`, 'success');
+            }
+
+            getCurrentLevel() {
+                return this.levels.find(l => l.id === this.player.currentLevelId);
+            }
+
+            buyItem(type, itemId) {
+                const item = type === 'potion' 
+                    ? this.shopItems.potions.find(p => p.id === itemId)
+                    : this.shopItems.tools.find(t => t.id === itemId);
+                
+                if (!item || this.player.money < item.price) return;
+
+                this.player.money -= item.price;
+
+                if (type === 'potion') {
+                    if (item.effect === 'hp') this.potions.hp++;
+                    else this.potions.energy++;
+                    this.showNotification(`购买了${item.name}`, 'success');
+                } else if (item.effect === 'repair') {
+                    this.pickaxe.durability = this.pickaxe.maxDurability;
+                    this.showNotification('镐子已修复!', 'success');
+                }
+
+                this.updateUI();
+                this.renderShop();
+            }
+
+            buyUpgrade(upgradeId) {
+                const upgrade = this.upgrades.find(u => u.id === upgradeId);
+                if (!upgrade || this.player.money < upgrade.price || this.pickaxe.id >= upgradeId) return;
+
+                this.player.money -= upgrade.price;
+                this.pickaxe = {
+                    id: upgrade.id,
+                    name: upgrade.name,
+                    icon: upgrade.icon,
+                    power: upgrade.power,
+                    durability: upgrade.durability,
+                    maxDurability: upgrade.durability
+                };
+
+                this.showNotification(`升级到${upgrade.name}!`, 'success');
+                this.updateUI();
+                this.renderUpgrades();
+            }
+
+            useHpPotion() {
+                if (this.potions.hp > 0 && this.player.hp < this.player.maxHp) {
+                    this.potions.hp--;
+                    this.player.hp = Math.min(this.player.maxHp, this.player.hp + 50);
+                    this.showNotification('使用生命药水', 'success');
+                    this.updateUI();
+                }
+            }
+
+            useEnergyPotion() {
+                if (this.potions.energy > 0 && this.player.energy < this.player.maxEnergy) {
+                    this.potions.energy--;
+                    this.player.energy = Math.min(this.player.maxEnergy, this.player.energy + 50);
+                    this.showNotification('使用体力药水', 'success');
+                    this.updateUI();
+                }
+            }
+
+            sellAllOres() {
+                let total = 0;
+                for (const [key, count] of Object.entries(this.inventory)) {
+                    if (count > 0 && this.oreTypes[key]) {
+                        total += count * this.oreTypes[key].basePrice;
+                        this.inventory[key] = 0;
+                    }
+                }
+                
+                if (total > 0) {
+                    this.player.money += total;
+                    this.showNotification(`出售矿石获得💰${total}`, 'success');
+                    this.updateUI();
+                    this.renderInventory();
+                } else {
+                    this.showNotification('背包为空', 'error');
+                }
+            }
+
+            // ===== 动画效果 =====
+            animateMiner(state) {
+                const miner = document.getElementById('minerCharacter');
+                const stateText = document.getElementById('minerState');
+                
+                miner.classList.remove('mining', 'jumping', 'hurt');
+                void miner.offsetWidth; // 触发重绘
+                miner.classList.add(state);
+                
+                const stateLabels = {
+                    mining: '挖矿中...',
+                    jumping: '跳跃!',
+                    hurt: '哎哟!'
+                };
+                stateText.textContent = stateLabels[state] || '准备挖矿';
+                stateText.className = 'miner-state ' + state;
+                
+                setTimeout(() => {
+                    miner.classList.remove(state);
+                    stateText.textContent = '准备挖矿';
+                    stateText.className = 'miner-state';
+                }, 500);
+            }
+
+            shakeScreen() {
+                const container = document.getElementById('gameContainer');
+                container.classList.add('screen-shake');
+                setTimeout(() => container.classList.remove('screen-shake'), 500);
+            }
+
+            showFloatingText(text, x, y, color, isCrit = false) {
+                const el = document.createElement('div');
+                el.className = 'damage-number' + (isCrit ? ' crit' : '');
+                el.textContent = text;
+                el.style.left = x + 'px';
+                el.style.top = y + 'px';
+                el.style.color = color;
+                document.body.appendChild(el);
+                setTimeout(() => el.remove(), 1000);
+            }
+
+            createParticles(x, y) {
+                for (let i = 0; i < 8; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle sparkle';
+                    particle.style.left = x + 'px';
+                    particle.style.top = y + 'px';
+                    particle.style.setProperty('--tx', (Math.random() - 0.5) * 100 + 'px');
+                    particle.style.setProperty('--ty', (Math.random() - 0.5) * 100 + 'px');
+                    document.body.appendChild(particle);
+                    setTimeout(() => particle.remove(), 800);
+                }
+            }
+
+            // ===== 通知系统 =====
+            showNotification(title, type = 'info') {
+                const notif = document.getElementById('notification');
+                document.getElementById('notifTitle').textContent = type === 'success' ? '✓ 成功' : type === 'error' ? '✗ 错误' : '提示';
+                document.getElementById('notifText').textContent = title;
+                notif.className = 'notification ' + type + ' show';
+                setTimeout(() => notif.classList.remove('show'), 2000);
+            }
+
+            // ===== 存档系统 =====
+            saveGame() {
+                const data = {
+                    player: this.player,
+                    pickaxe: this.pickaxe,
+                    inventory: this.inventory,
+                    potions: this.potions,
+                    levels: this.levels.map(l => ({ id: l.id, unlocked: l.unlocked, completed: l.completed }))
+                };
+                localStorage.setItem('abyssMinerSave', JSON.stringify(data));
+            }
+
+            loadGame() {
+                const saved = localStorage.getItem('abyssMinerSave');
+                if (saved) {
+                    try {
+                        const data = JSON.parse(saved);
+                        if (data.player) this.player = { ...this.player, ...data.player };
+                        if (data.pickaxe) this.pickaxe = { ...this.pickaxe, ...data.pickaxe };
+                        if (data.inventory) this.inventory = data.inventory;
+                        if (data.potions) this.potions = data.potions;
+                        if (data.levels) {
+                            data.levels.forEach(savedLevel => {
+                                const level = this.levels.find(l => l.id === savedLevel.id);
+                                if (level) {
+                                    level.unlocked = savedLevel.unlocked;
+                                    level.completed = savedLevel.completed;
+                                }
+                            });
+                        }
+                    } catch (e) {
+                        console.error('存档加载失败:', e);
+                    }
+                }
+            }
+
+            // 定期存档
+            autoSave() {
+                setInterval(() => this.saveGame(), 30000);
+            }
+        }
+
+        // 启动游戏
+        const game = new MiningGame();
+        game.autoSave();
+
+        // 页面关闭前存档
+        window.addEventListener('beforeunload', () => {
+            game.saveGame();
+        });
+    </script>
+</body>
+</html>
